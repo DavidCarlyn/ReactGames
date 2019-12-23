@@ -1,0 +1,42 @@
+.Tile {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.Tile .piece {
+    display: none;
+    margin: auto;
+    width: 75%;
+    height: 75%;
+    border-radius: 50%;
+}
+
+.Tile .piece:hover {
+    cursor: pointer;
+}
+
+.black-tile {
+    background-color: black;
+}
+
+.black-tile .piece {
+    background-color: red;
+}
+
+.black-tile .piece:hover {
+    background-color: rgb(216, 0, 0);
+}
+
+.red-tile {
+    background-color: red;
+}
+
+.red-tile .piece {
+    background-color: black;
+}
+
+.red-tile .piece:hover {
+    background-color: rgb(40, 40, 40);
+}
