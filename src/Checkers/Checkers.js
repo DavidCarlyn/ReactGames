@@ -8,12 +8,51 @@ function getTile(x, y) {
     return document.getElementsByClassName("Tile")[(y * 8) + x];
 }
 
+function isLegalMove(x1, y1, x2, y2, pieces) {
+    if (x2 > 7 || x2 < 0 || y2 < 0 || y2 > 7) return false; // Stay within boundaries
+    if (x1 === x2 || y1 === y2) return false; // Can not move in non-diagonal movements
+
+    const startIndex = pieces.findIndex(p => p.x === x1 && p.y === y1);
+    if (startIndex === -1) return false; // Should never happen...
+    const startType = pieces[startIndex].type;
+    const startIsKing = pieces[startIndex].isKing;
+
+    // Cannot move backwards if not a king
+    if (!startIsKing) {
+        if (y2 < y1 && startType === "black") return false;
+        if (y2 > y1 && startType === "red") return false;
+    }
+    // Simple move
+    if (Math.abs(x2 - x1) === 1 && Math.abs(y2 - y1) === 1) {
+        // Handling if a piece was present or not is handled in handleClick atm.
+        // Should probably bring that logic here...
+        console.log("Move");
+    // Jump
+    } else if (Math.abs(x2 - x1) === 2 && Math.abs(y2 - y1) === 2) {
+        console.log("Jump");
+        const startIndex = pieces.findIndex(p => p.x === x1 && p.y === y1);
+        if (startIndex === -1) return false; // Should never happen...
+        const startType = pieces[startIndex].type;
+        const middleX = (x1+x2) / 2; // Should always evenly divide
+        const middleY = (y1+y2) / 2; // Should always evenly divide
+        const middleIndex = pieces.findIndex(p => p.x === middleX && p.y === middleY);
+        if (middleIndex === -1) return false;
+        const middleType = pieces[middleIndex].type;
+        if (middleType === startType) return false;
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
 function handleClick(tile, selected, setSelected, pieces, setPieces) {
     const clickedTile = getTile(tile.x, tile.y);
     const clickedPiece = clickedTile.getElementsByClassName("piece")[0];
     const isPiece = clickedPiece.style.display === "block";
     if (selected.isSelected) {
         if (isPiece) return;
+        if (!isLegalMove(selected.x, selected.y, tile.x, tile.y, pieces)) return;
         const selectedTile = getTile(selected.x, selected.y);
         const selectedPiece = selectedTile.getElementsByClassName("piece")[0];
         var piecesCopy = pieces;
