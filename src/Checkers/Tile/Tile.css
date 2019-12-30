@@ -17,26 +17,32 @@
     cursor: pointer;
 }
 
+.Tile .black-piece {
+    background-color: black;
+    border-color: red;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.Tile .red-piece {
+    background-color: red;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.Tile .black-piece:hover {
+    background-color: rgb(40, 40, 40);
+}
+
+.Tile .red-piece:hover {
+    background-color: rgb(216, 0, 0);
+}
+
 .black-tile {
     background-color: black;
 }
 
-.black-tile .piece {
-    background-color: red;
-}
-
-.black-tile .piece:hover {
-    background-color: rgb(216, 0, 0);
-}
-
 .red-tile {
     background-color: red;
-}
-
-.red-tile .piece {
-    background-color: black;
-}
-
-.red-tile .piece:hover {
-    background-color: rgb(40, 40, 40);
 }
