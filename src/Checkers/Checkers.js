@@ -8,42 +8,55 @@ function getTile(x, y) {
     return document.getElementsByClassName("Tile")[(y * 8) + x];
 }
 
-function isLegalMove(x1, y1, x2, y2, pieces) {
-    if (x2 > 7 || x2 < 0 || y2 < 0 || y2 > 7) return false; // Stay within boundaries
-    if (x1 === x2 || y1 === y2) return false; // Can not move in non-diagonal movements
+function getMoveDetails(x1, y1, x2, y2, pieces) {
+    var details = {
+        legal : false,
+        type : -1,
+        jumpedPiece : -1
+    }
+    if (x2 > 7 || x2 < 0 || y2 < 0 || y2 > 7) return details; // Stay within boundaries
+    if (x1 === x2 || y1 === y2) return details; // Can not move in non-diagonal movements
 
     const startIndex = pieces.findIndex(p => p.x === x1 && p.y === y1);
-    if (startIndex === -1) return false; // Should never happen...
+    if (startIndex === -1) return details; // Should never happen...
     const startType = pieces[startIndex].type;
     const startIsKing = pieces[startIndex].isKing;
 
     // Cannot move backwards if not a king
     if (!startIsKing) {
-        if (y2 < y1 && startType === "black") return false;
-        if (y2 > y1 && startType === "red") return false;
+        if (y2 < y1 && startType === "black") return details;
+        if (y2 > y1 && startType === "red") return details;
     }
     // Simple move
     if (Math.abs(x2 - x1) === 1 && Math.abs(y2 - y1) === 1) {
         // Handling if a piece was present or not is handled in handleClick atm.
         // Should probably bring that logic here...
         console.log("Move");
+        details.type = 0;
     // Jump
     } else if (Math.abs(x2 - x1) === 2 && Math.abs(y2 - y1) === 2) {
         console.log("Jump");
         const startIndex = pieces.findIndex(p => p.x === x1 && p.y === y1);
-        if (startIndex === -1) return false; // Should never happen...
+        if (startIndex === -1) return details; // Should never happen...
         const startType = pieces[startIndex].type;
         const middleX = (x1+x2) / 2; // Should always evenly divide
         const middleY = (y1+y2) / 2; // Should always evenly divide
         const middleIndex = pieces.findIndex(p => p.x === middleX && p.y === middleY);
-        if (middleIndex === -1) return false;
+        if (middleIndex === -1) return details;
         const middleType = pieces[middleIndex].type;
-        if (middleType === startType) return false;
+        if (middleType === startType) return details;
+        details.type = 1;
+        details.jumpedPiece = {
+            type : middleType,
+            x : middleX,
+            y : middleY
+        }
     } else {
-        return false;
+        return details;
     }
 
-    return true;
+    details.legal = true;
+    return details;
 }
 
 function handleClick(tile, selected, setSelected, pieces, setPieces) {
@@ -51,8 +64,19 @@ function handleClick(tile, selected, setSelected, pieces, setPieces) {
     const clickedPiece = clickedTile.getElementsByClassName("piece")[0];
     const isPiece = clickedPiece.style.display === "block";
     if (selected.isSelected) {
-        if (isPiece) return;
-        if (!isLegalMove(selected.x, selected.y, tile.x, tile.y, pieces)) return;
+        if (isPiece) {
+            if (tile.x === selected.x && tile.y === selected.y) {
+                clickedPiece.className = selected.type === "black" ? "piece black-piece" : "piece red-piece";
+                setSelected({
+                    ...selected,
+                    isSelected : false
+                })
+            }
+
+            return;
+        }
+        const moveDetails = getMoveDetails(selected.x, selected.y, tile.x, tile.y, pieces);
+        if (!moveDetails.legal) return;
         const selectedTile = getTile(selected.x, selected.y);
         const selectedPiece = selectedTile.getElementsByClassName("piece")[0];
         var piecesCopy = pieces;
@@ -68,13 +92,26 @@ function handleClick(tile, selected, setSelected, pieces, setPieces) {
             ...selected,
             isSelected : false
         });
+
+        // If move type is jumped
+        if (moveDetails.type === 1) {
+            const jumpedIndex = piecesCopy.findIndex(p => p.x === moveDetails.jumpedPiece.x && p.y === moveDetails.jumpedPiece.y);
+            const jumpedPiece = piecesCopy.splice(jumpedIndex, 1)[0];
+            const jumpedTile = getTile(jumpedPiece.x, jumpedPiece.y);
+            const jumpedPieceEle = jumpedTile.getElementsByClassName("piece")[0];
+            jumpedPieceEle.className = "piece";
+            jumpedPieceEle.style.display = "none";
+        }
         setPieces(piecesCopy);
     } else {
         if (!isPiece) return;
+        clickedPiece.className = clickedPiece.className + " selected";
+        const type = pieces.find(p => p.x === tile.x && p.y === tile.y).type;
         setSelected({
             ...selected,
             x : tile.x,
             y : tile.y,
+            type : type,
             isSelected : true
         });
     }
