@@ -66,6 +66,7 @@ function handleClick(tile, selected, setSelected, pieces, setPieces, gameStats, 
     if (selected.isSelected) {
         if (isPiece) {
             if (tile.x === selected.x && tile.y === selected.y) {
+                console.log(selected.type);
                 clickedPiece.className = selected.type === "black" ? "piece black-piece" : "piece red-piece";
                 setSelected({
                     ...selected,
@@ -84,6 +85,10 @@ function handleClick(tile, selected, setSelected, pieces, setPieces, gameStats, 
 
         piecesCopy[selectedIndex].x = tile.x;
         piecesCopy[selectedIndex].y = tile.y;
+        if ((piecesCopy[selectedIndex].type === "red" && tile.y === 0)
+            || (piecesCopy[selectedIndex].type === "black" && tile.y === 7)) {
+            piecesCopy[selectedIndex].isKing = true;
+        }
         selectedPiece.style.display = "none";
         selectedPiece.className = "piece";
         clickedPiece.style.display = "block";
@@ -120,15 +125,16 @@ function handleClick(tile, selected, setSelected, pieces, setPieces, gameStats, 
         });
     } else {
         if (!isPiece) return;
-        const clickedPieceType = pieces.find(p => p.x === tile.x && p.y === tile.y).type;
-        if (clickedPieceType === "black" && gameStats.turn !== 0) return;
-        if (clickedPieceType === "red" && gameStats.turn !== 1) return;
+        const foundPiece = pieces.find(p => p.x === tile.x && p.y === tile.y);
+        if (foundPiece.type === "black" && gameStats.turn !== 0) return;
+        if (foundPiece.type === "red" && gameStats.turn !== 1) return;
         clickedPiece.className = clickedPiece.className + " selected";
         setSelected({
             ...selected,
             x : tile.x,
             y : tile.y,
-            type : clickedPieceType,
+            type : foundPiece.type,
+            isKing : foundPiece.isKing,
             isSelected : true
         });
     }
